@@ -1,27 +1,21 @@
 import React, {useEffect, useContext} from 'react'
 import { AuthContext } from "./../App";
-import axios from "axios";
+
 import { useNavigate } from "react-router-dom";
 import { Grid } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
+import { UserAPI } from './UserAPI';
 
 const CallbackComponent = () => {
 
-    const {setAccess_token, setId_token, setUserInfo, setError, userInfo} = useContext(AuthContext)
-  
+  const {setAccess_token, setId_token, setUserInfo, setError, userInfo} = useContext(AuthContext)
+    
   const navigate = useNavigate()
 
-    const fetchUserInfo = (id_token, accessToken) => {
-    setAccess_token(accessToken);
-    setId_token(id_token)
-    if(accessToken){
-      axios.get(`https://dev-09479545.okta.com/oauth2/v1/userinfo`, {
-      redirect: 'follow',
-      withCredentials: true,
-      headers:{ 'Authorization' : `Bearer ${accessToken}`, "Cookie" : 'DT=DI1piy4vsanQ-iAg5xm0G4L0A; JSESSIONID=ADDB6DE212B92F39EAD7BDE20DB90076; t=default'}
-      })
-      .then(res => {
-        setUserInfo({userName: res.data.name, email: res.data.preferred_username});   
+  const fetchUserInfo = (access_token) => {
+    if(access_token){
+      UserAPI.fetchUserInfo(access_token).then(res => {
+        setUserInfo({userName: res?.data?.name, email: res?.data?.preferred_username});   
         navigate('/home')     
       })
       .catch(err => {
@@ -31,13 +25,23 @@ const CallbackComponent = () => {
     }
   }
 
-  useEffect(() => {
-        var url = window.location;
+  const getAccessToken = (auth_code) =>{
+    UserAPI.getAccessToken(auth_code).then(res => {
+      setAccess_token(res.data.access_token);
+      setId_token(res.data.id_token)
+      fetchUserInfo(res.data.access_token)
+    }).catch(error => {
+      console.log(error)
+    })
+  }
 
-    if(url.hash.match(/\#(?:id_token)\=([\S\s]*?)\&/) !== null){
-      var access_token = new URLSearchParams(url.href).getAll("access_token")[0];
-      fetchUserInfo(url.hash.match(/\#(?:id_token)\=([\S\s]*?)\&/)[1], access_token)
-      
+  useEffect(() => {
+    var url = window.location;
+
+    const searchParams = new URLSearchParams(window.location.search);
+
+    if(searchParams.has('code')){ 
+      getAccessToken(searchParams.get('code'))  
     }else{
       var err = new URLSearchParams(url.href).getAll("error")[0];
       setError(err)

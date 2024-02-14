@@ -2,7 +2,6 @@ import React, { useState, useContext } from "react";
 import {
   Grid,
   TextField,
-  Button,
   Stack,
   Snackbar,
   Alert,
@@ -15,10 +14,11 @@ import Paper from "@mui/material/Paper";
 import Skeleton from "@mui/material/Skeleton";
 import CircularProgress from "@mui/material/CircularProgress";
 import validator from "validator";
-import axios from "axios";
 import SearchBar from "./SearchBar";
 import AskQuestionButton from "../Questions/AskQuestionButton";
 import { AuthContext } from "../../App";
+import CustomButton from "./CustomButton";
+import { UserAPI } from "../UserAPI";
 
 const Main = () => {
   const [enterEmail, setEnterEmail] = useState("");
@@ -46,42 +46,22 @@ const Main = () => {
 
   const fetchDetailsHandller = () => {
     setIsFetched(true);
-    axios
-      .get(`http://127.0.0.1:5000/api/users/${enterEmail}`, {
-        redirect: "follow",
-        headers: { Authorization: `Bearer ${access_token}` },
-      })
-      .then((res) => {
+      UserAPI.fetchUserDetails(enterEmail, access_token).then((res) => {
         setLoginDetails(res?.data);
         setIsFetched(false);
         setShowDetails(true);
       })
       .catch((err) => console.log(err?.response?.data.message));
 
-    //to fetch the MFA factors
-    axios
-      .get(`http://127.0.0.1:5000/api/users/${enterEmail}/mfa-factors`, {
-        redirect: "follow",
-        headers: { Authorization: `Bearer ${access_token}` },
-      })
-      .then((res) => {
+    // to fetch the MFA factors
+      UserAPI.fetchMFA(enterEmail, access_token).then((res) => {
         setMfaList(res.data.factors);
       })
       .catch((err) => console.log(err));
   };
 
   const changePasswordHandller = () => {
-    axios
-      .post(
-        `http://127.0.0.1:5000/api/users/${enterEmail}/change-password`,
-        {
-          redirect: "follow",
-        },
-        {
-          headers: { Authorization: `Bearer ${access_token}` },
-        }
-      )
-      .then((res) => {
+      UserAPI.changePassword(enterEmail, access_token).then((res) => {
         setMessage({});
         setMessage({ message: res.data.message, status: res.data.status });
       })
@@ -89,15 +69,7 @@ const Main = () => {
   };
 
   const resetMFAHandller = (factorID) => {
-    axios
-      .delete(
-        `http://127.0.0.1:5000//api/users/${enterEmail}/mfa-factors/${factorID}`,
-        {
-          redirect: "follow",
-          headers: { Authorization: `Bearer ${access_token}` },
-        }
-      )
-      .then((res) => {
+      UserAPI.resetMFA(enterEmail, factorID, access_token).then((res) => {
         setMessage({});
         setMessage({ message: res.data.message, status: res.data.status });
         const list = mfaList.filter((item) => item.factor_id !== factorID);
@@ -128,22 +100,14 @@ const Main = () => {
 
   const onAskQuestion = () => {
     setIsAnswering(true);
-    axios({
-      method: "post",
-      url: "http://127.0.0.1:5000/ask_logs/",
-      headers: { "content-type": "application/json" },
-      data: {
-        question: enterQuestion,
-      },
-    })
-      .then((res) => {
+      UserAPI.askQuestion(enterQuestion).then((res) => {
         setAnswer("");
-        console.log(res.data)
-        setAnswer(res.data.result[0]);
+        setAnswer(res.data.result);
         setIsAnswering(false);
       })
       .catch((err) => {
         setIsAnswering(false);
+        console.log(err)
         setError({ message: err.message });
       });
   };
@@ -182,20 +146,12 @@ const Main = () => {
           />
         </Grid>
         <Grid item xs={12} md={2}>
-          <Button
-            variant="contained"
-            size="large"
+          <CustomButton
             disabled={!success}
-            style={{
-              width: "100%",
-              height: "50px",
-              fontSize: "100%",
-              backgroundColor: "#F76C6C",
-            }}
             onClick={fetchDetailsHandller}
           >
             Fetch Details
-          </Button>
+          </CustomButton>
         </Grid>
       </Grid>
       <Grid
@@ -239,20 +195,12 @@ const Main = () => {
         )}
         <Grid item xs={12} md={4} sx={{ marginInline: "5%", marginTop: "3%" }}>
           {showDetails && (
-            <Button
-              variant="contained"
+            <CustomButton
               disabled={loginDetails?.risk_percentage >= 50}
-              style={{
-                width: "100%",
-                height: "50px",
-                fontSize: "100%",
-                marginBlock: "10px",
-                backgroundColor: "#F76C6C",
-              }}
               onClick={changePasswordHandller}
             >
               Change Password
-            </Button>
+            </CustomButton>
           )}
           {mfaList?.length > 0 && showDetails && (
             <Grow
@@ -328,22 +276,13 @@ const Main = () => {
                       </Stack>
                     </Grid>
                     <Grid item>
-                      <Button
-                        variant="contained"
-                        size="large"
-                        style={{
-                          width: "100%",
-                          height: "50px",
-                          fontSize: "100%",
-                          marginBlock: "10px",
-                          backgroundColor: "#F76C6C",
-                        }}
+                      <CustomButton
                         disabled={loginDetails?.risk_percentage >= 50}
                         sx={{ marginBlock: "10px", paddingInline: "20px" }}
-                        onClick={() => resetMFAHandller(item.factor_id)}
+                        onClick={()=>resetMFAHandller(item.factor_id)}
                       >
                         Reset MFA
-                      </Button>
+                      </CustomButton>
                     </Grid>
                   </Grid>
                 </Paper>
@@ -503,8 +442,8 @@ const Main = () => {
                       />
                     )}
                     {!isAnswering && (
-                      <Typography color={"black"}>
-                        {!error?.message ? answer : error.message}
+                      <Typography color='green'>
+                        {!error?.message ? answer : <Typography color={"red"}>error.error</Typography>}
                       </Typography>
                     )}
                   </Box>

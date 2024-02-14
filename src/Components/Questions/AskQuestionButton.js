@@ -10,7 +10,7 @@ const AskQuestionButton = ({askQuestionButtonHandller}) => {
 
   return (
     <>
-      <Fab variant="extended" style={{backgroundColor:"#F76C6C", color:"white", width: "100%", height: "65%", fontSize: "100%", borderRadius:"3px"}} onClick={onAskQuestionHandller}>
+      <Fab variant="extended" color='primary' style={{width: "100%", height: "65%", fontSize: "100%", borderRadius:"3px"}} onClick={onAskQuestionHandller}>
         <HelpIcon sx={{ mr: 1 }}/>
         Ask Question
       </Fab>

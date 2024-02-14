@@ -1,7 +1,8 @@
 import React, {useContext} from 'react';
-import { AppBar, Box, Toolbar, Typography, Tooltip, IconButton, Avatar, Button } from '@mui/material';
-import axios from "axios";
+import { AppBar, Box, Toolbar, Typography, Tooltip, IconButton, Avatar } from '@mui/material';
 import { AuthContext } from "../../App";
+import CustomButton from '../Main/CustomButton';
+import { UserAPI } from '../UserAPI';
 
 function Navbar() {
   const {userInfo, access_token, id_token} = useContext(AuthContext)
@@ -35,32 +36,22 @@ function Navbar() {
   }
 
   const handleLogout = () => {
-
-      axios({
-        method: 'post',
-        url: `http://127.0.0.1:5000/api/tokens/revoke`,
-        headers: {'content-type': 'application/json'}, 
-        data: {
-          'access_token': access_token
-        }
+      UserAPI.logout(access_token).then(res=> {
+        window.location.replace(`${process.env.REACT_APP_OKTA_DOMAIN_URL}/oauth2/v1/logout?id_token_hint=${id_token}&post_logout_redirect_uri=http://localhost:3000/`)
       })
-      .then(res=> {
-        window.location.replace(`https://dev-09479545.okta.com/oauth2/v1/logout?id_token_hint=${id_token}&post_logout_redirect_uri=http://localhost:3000/`)
-      })
-      .catch(err => console.log(err))
-
-    
+      .catch(err => console.log(err))    
   }
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="fixed" sx={{ backgroundColor: "#24305E" }}>
+        <AppBar position="fixed" sx={{ backgroundColor: "white" }}>
           <Toolbar>
-            <Typography variant='h4' color={'white'} style={{ textTransform: "none"}} sx={{ typography: { sm: 'h4', xs: 'h5' } }}>
+            <Typography variant='h4' color={'#24305E'} style={{ textTransform: "none"}} sx={{ typography: { sm: 'h4', xs: 'h5' } }}>
               <strong>HelpDesk Insights</strong>
             </Typography>
             <Box sx={{flexGrow: 1}}/>
-            <Button variant='contained' style={{backgroundColor:"#F76C6C"}} onClick={handleLogout}>Logout</Button>
+            
+            <Box><CustomButton size='small' onClick={handleLogout}>Logout</CustomButton></Box>
             <Tooltip title={userInfo?.email}>
               <IconButton
                 size="small"

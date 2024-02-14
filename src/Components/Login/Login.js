@@ -10,7 +10,7 @@ const Login = () => {
   const navigate = useNavigate()
 
   const onLogin = () => {
-    navigate('/redirect')
+    navigate('/redirect') 
   }
 
   return (
@@ -26,7 +26,7 @@ const Login = () => {
         <Typography variant='h4' color={'#24305E'} style={{ textTransform: "none", marginBottom:"20%"}} sx={{ typography: { sm: 'h4', xs: 'h5' } }}>
           <strong>HelpDesk Insights</strong>
         </Typography>          
-        <Fab variant="extended" style={{backgroundColor:"#F76C6C", color:"white", width: "100%", height: "50px", fontSize: "100%", borderRadius:"3px"}} onClick={onLogin}>
+        <Fab variant="extended" color='primary' style={{width: "100%", height: "50px", fontSize: "100%", borderRadius:"3px"}} onClick={onLogin}>
           <LoginIcon sx={{ mr: 1 }}/>
           Login
         </Fab>
