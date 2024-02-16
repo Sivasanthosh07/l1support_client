@@ -36,10 +36,7 @@ function Navbar() {
   }
 
   const handleLogout = () => {
-      UserAPI.logout(access_token).then(res=> {
-        window.location.replace(`${process.env.REACT_APP_OKTA_DOMAIN_URL}/oauth2/v1/logout?id_token_hint=${id_token}&post_logout_redirect_uri=http://localhost:3000/`)
-      })
-      .catch(err => console.log(err))    
+      UserAPI.logout(access_token, id_token); 
   }
 
   return (

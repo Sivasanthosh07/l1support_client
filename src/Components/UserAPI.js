@@ -1,11 +1,10 @@
 import axios from "axios";
 
 export const UserAPI = {
-  fetchUserInfo:(access_token)=>{
-    return axios.get(`${process.env.REACT_APP_OKTA_DOMAIN_URL}/oauth2/v1/userinfo`, {
+  getUserInfo:(access_token) => {
+    return axios.get(`${process.env.REACT_APP_SERVER_DOMAIN_URL}/api/userinfo`, {
       redirect: 'follow',
-      withCredentials: true,
-      headers:{ 'Authorization' : `Bearer ${access_token}`, "Cookie" : 'DT=DI1piy4vsanQ-iAg5xm0G4L0A; JSESSIONID=ADDB6DE212B92F39EAD7BDE20DB90076; t=default'}
+      headers:{ 'Authorization' : `Bearer ${access_token}`}
       })
   },
   getAccessToken:(auth_code)=>{
@@ -66,7 +65,7 @@ export const UserAPI = {
       },
     })
   },
-  logout:(access_token)=>{
+  logout:(access_token, id_token)=>{
     return axios({
         method: 'post',
         url: `${process.env.REACT_APP_SERVER_DOMAIN_URL}/api/tokens/revoke`,
@@ -75,5 +74,8 @@ export const UserAPI = {
           'access_token': access_token
         }
       })
+      .then(res => 
+        window.location.replace(`${process.env.REACT_APP_OKTA_DOMAIN_URL}/oauth2/v1/logout?id_token_hint=${id_token}&post_logout_redirect_uri=http://localhost:3000/`)
+      ).catch(err => console.log(err))
   }
 }

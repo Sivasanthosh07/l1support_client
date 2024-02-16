@@ -149,6 +149,7 @@ const Main = () => {
           <CustomButton
             disabled={!success}
             onClick={fetchDetailsHandller}
+            style={{height:'60px'}}
           >
             Fetch Details
           </CustomButton>

@@ -12,11 +12,18 @@ const CallbackComponent = () => {
     
   const navigate = useNavigate()
 
-  const fetchUserInfo = (access_token) => {
+  const fetchUserInfo = (access_token, id_token) => {
+    // console.log(access_token)
     if(access_token){
-      UserAPI.fetchUserInfo(access_token).then(res => {
-        setUserInfo({userName: res?.data?.name, email: res?.data?.preferred_username});   
-        navigate('/home')     
+      UserAPI.getUserInfo(access_token).then(res => {
+        // console.log(res)
+        if(res?.data?.role === 'ADMIN'){
+          setUserInfo({userName: res?.data?.username, email: res?.data?.login});   
+          navigate('/home')   
+        }else if(res?.data?.role === 'USER'){
+          setError('Access is denied.') 
+          UserAPI.logout(access_token, id_token)
+        }
       })
       .catch(err => {
         setError('The access token is invalid') 
@@ -29,7 +36,7 @@ const CallbackComponent = () => {
     UserAPI.getAccessToken(auth_code).then(res => {
       setAccess_token(res.data.access_token);
       setId_token(res.data.id_token)
-      fetchUserInfo(res.data.access_token)
+      fetchUserInfo(res.data.access_token, res.data.id_token)
     }).catch(error => {
       console.log(error)
     })

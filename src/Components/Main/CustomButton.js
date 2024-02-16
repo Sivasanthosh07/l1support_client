@@ -1,4 +1,4 @@
-import { Button } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import React from 'react'
 
 const CustomButton = (props) => {
@@ -18,7 +18,7 @@ const CustomButton = (props) => {
       }}
       sx={{...sx}}
       onClick={()=>onClick()}
-    >{children}</Button>
+    ><Typography style={{textTransform:'none'}}>{children}</Typography></Button>
   )
 }
 
