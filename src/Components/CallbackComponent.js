@@ -18,11 +18,11 @@ const CallbackComponent = () => {
       UserAPI.getUserInfo(access_token).then(res => {
         // console.log(res)
         if(res?.data?.role === 'ADMIN'){
-          setUserInfo({userName: res?.data?.username, email: res?.data?.login});   
+          setUserInfo({userName: res?.data?.username, email: res?.data?.email});   
           navigate('/home')   
         }else if(res?.data?.role === 'USER'){
-          setError('Access is denied.') 
-          UserAPI.logout(access_token, id_token)
+          // setError('Access is denied.') 
+          UserAPI.logout(access_token, id_token, 'Access denied! You dont have permission to access the app. ')
         }
       })
       .catch(err => {

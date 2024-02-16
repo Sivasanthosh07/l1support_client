@@ -65,7 +65,7 @@ export const UserAPI = {
       },
     })
   },
-  logout:(access_token, id_token)=>{
+  logout:(access_token, id_token, error='')=>{
     return axios({
         method: 'post',
         url: `${process.env.REACT_APP_SERVER_DOMAIN_URL}/api/tokens/revoke`,
@@ -75,7 +75,7 @@ export const UserAPI = {
         }
       })
       .then(res => 
-        window.location.replace(`${process.env.REACT_APP_OKTA_DOMAIN_URL}/oauth2/v1/logout?id_token_hint=${id_token}&post_logout_redirect_uri=http://localhost:3000/`)
+        window.location.replace(`${process.env.REACT_APP_OKTA_DOMAIN_URL}/oauth2/v1/logout?id_token_hint=${id_token}&post_logout_redirect_uri=http://localhost:3000/&state=${error}`)
       ).catch(err => console.log(err))
   }
 }

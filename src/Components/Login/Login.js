@@ -1,4 +1,4 @@
-import React, {useContext} from 'react'
+import React, {useContext, useEffect} from 'react'
 import { Fab, Grid, Typography, Paper } from "@mui/material";
 import LoginIcon from '@mui/icons-material/Login';
 import { AuthContext } from "../../App";
@@ -6,12 +6,20 @@ import { useNavigate } from "react-router-dom";
 
 const Login = () => {
 
-  const error = useContext(AuthContext)
+  const {error, setError} = useContext(AuthContext)
   const navigate = useNavigate()
 
   const onLogin = () => {
     navigate('/redirect') 
   }
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+
+    if(searchParams.has('state')){ 
+      setError(searchParams.get('state'))
+    }  
+  }, [])
 
   return (
     <Grid
@@ -30,7 +38,7 @@ const Login = () => {
           <LoginIcon sx={{ mr: 1 }}/>
           Login
         </Fab>
-        <Typography variant='body1' color={"#F76C6C"} style={{marginTop:"10%"}}>{error.error}</Typography>
+        <Typography variant='body1' color={"#F76C6C"} style={{marginTop:"10%"}}>{error}</Typography>
         </Paper>   
       </Grid>
     </Grid>
