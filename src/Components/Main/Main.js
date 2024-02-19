@@ -100,7 +100,7 @@ const Main = () => {
 
   const onAskQuestion = () => {
     setIsAnswering(true);
-      UserAPI.askQuestion(enterQuestion).then((res) => {
+      UserAPI.askQuestion(enterQuestion, enterEmail).then((res) => {
         setAnswer("");
         setAnswer(res.data.result);
         setIsAnswering(false);
