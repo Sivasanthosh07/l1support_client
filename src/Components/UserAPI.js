@@ -58,7 +58,7 @@ export const UserAPI = {
   askQuestion:(enterQuestion, enterEmail)=>{
     return axios({
       method: "post",
-      url: `${process.env.REACT_APP_SERVER_DOMAIN_URL}/ask_logs/${enterEmail}`,
+      url: `${process.env.REACT_APP_SERVER_DOMAIN_URL}/ask_logs/?username=${enterEmail}`,
       headers: { "content-type": "application/json" },
       data: {
         question: enterQuestion,
