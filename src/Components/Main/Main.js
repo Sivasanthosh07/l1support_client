@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, Suspense } from "react";
 import {
   Grid,
   TextField,
@@ -61,27 +61,27 @@ const Main = () => {
   };
 
   const changePasswordHandller = () => {
-      UserAPI.changePassword(enterEmail, access_token).then((res) => {
-        setMessage({});
-        setMessage({ message: res.data.message, status: res.data.status });
-      })
-      .catch((err) => console.log(err));
+  UserAPI.changePassword(enterEmail, access_token).then((res) => {
+  setMessage({});
+  setMessage({ message: res.data.message, status: res.data.status });
+  })
+  .catch((err) => console.log(err));
   };
 
   const resetMFAHandller = (factorID) => {
-      UserAPI.resetMFA(enterEmail, factorID, access_token).then((res) => {
-        setMessage({});
-        setMessage({ message: res.data.message, status: res.data.status });
-        const list = mfaList.filter((item) => item.factor_id !== factorID);
-        setMfaList(list);
-      })
-      .catch((err) => console.log(err));
+  UserAPI.resetMFA(enterEmail, factorID, access_token).then((res) => {
+  setMessage({});
+  setMessage({ message: res.data.message, status: res.data.status });
+  const list = mfaList.filter((item) => item.factor_id !== factorID);
+  setMfaList(list);
+  })
+  .catch((err) => console.log(err));
   };
-
+  
   const validateEmail = (e) => {
     setIsFetched(false);
     setShowDetails(false);
-    const email = e.target.value;
+        const email = e.target.value;
     setEnterEmail(email);
 
     if (validator.isEmail(email)) {
@@ -194,10 +194,10 @@ const Main = () => {
             <CircularProgress />
           </Stack>
         )}
-        <Grid item xs={12} md={4} sx={{ marginInline: "5%", marginTop: "3%" }}>
+                  <Grid item xs={12} md={4} sx={{ marginInline: "5%", marginTop: "3%" }}>
           {showDetails && (
             <CustomButton
-              disabled={loginDetails?.risk_percentage >= 50}
+              disabled={loginDetails?.risk_percentage >= 80}
               onClick={changePasswordHandller}
             >
               Change Password
@@ -209,7 +209,7 @@ const Main = () => {
               style={{ transformOrigin: "0 0 0" }}
               timeout={mfaList?.length > 0 ? 500 : 0}
             >
-              <Typography variant="caption">
+            <Typography variant="caption">
                 <strong>
                   <h2>User MFA Factors</h2>
                 </strong>
@@ -278,7 +278,7 @@ const Main = () => {
                     </Grid>
                     <Grid item>
                       <CustomButton
-                        disabled={loginDetails?.risk_percentage >= 50}
+                        disabled={loginDetails?.risk_percentage >= 80}
                         sx={{ marginBlock: "10px", paddingInline: "20px" }}
                         onClick={()=>resetMFAHandller(item.factor_id)}
                       >
