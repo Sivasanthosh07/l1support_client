@@ -25,7 +25,7 @@ export const UserAPI = {
         redirect: "follow",
         headers: { Authorization: `Bearer ${access_token}` },
       })
-  },
+  },  
   fetchMFA:(enterEmail, access_token)=>{
     return axios
       .get(`${process.env.REACT_APP_SERVER_USER_URL}/${enterEmail}/mfa-factors`, {
@@ -44,6 +44,13 @@ export const UserAPI = {
           headers: { Authorization: `Bearer ${access_token}` },
         }
       )
+  },
+  verifyMFA: (enterEmail, factorID, access_token) => {
+    return axios
+    .get(`${process.env.REACT_APP_SERVER_VERIFY_MFA}/${enterEmail}/factors/${factorID}/transactions`, {
+      redirect: "follow",
+      headers: { Authorization: `Bearer ${access_token}` },
+    })
   },
   resetMFA:(enterEmail, factorID, access_token)=>{
     return axios

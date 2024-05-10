@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import Skeleton from "@mui/material/Skeleton";
+import { green } from '@mui/material/colors';
 import CircularProgress from "@mui/material/CircularProgress";
 import validator from "validator";
 import SearchBar from "./SearchBar";
@@ -31,8 +32,21 @@ const Main = () => {
   const [isFetched, setIsFetched] = useState(false);
   const [isAnswering, setIsAnswering] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [isMFAVerifying, setIsMFAVerifying] = useState(false);
+  const [mfaVerified, setMfaVerified] = useState(false);
   const [error, setError] = useState("");
   const { access_token } = useContext(AuthContext);
+
+  const buttonSx = {
+    ...(mfaVerified ? {
+      backgroundColor: green[500],
+      '&:hover': {
+        backgroundColor: green[700],
+      },
+    } : {
+      
+    }),
+  };
 
   const getLocalDateTime = (stamp) => {
     const date = new Date(stamp);
@@ -46,42 +60,54 @@ const Main = () => {
 
   const fetchDetailsHandller = () => {
     setIsFetched(true);
-      UserAPI.fetchUserDetails(enterEmail, access_token).then((res) => {
-        setLoginDetails(res?.data);
-        setIsFetched(false);
-        setShowDetails(true);
-      })
+    UserAPI.fetchUserDetails(enterEmail, access_token).then((res) => {
+      setLoginDetails(res?.data);
+      setIsFetched(false);
+      setShowDetails(true);
+    })
       .catch((err) => console.log(err?.response?.data.message));
 
     // to fetch the MFA factors
-      UserAPI.fetchMFA(enterEmail, access_token).then((res) => {
-        setMfaList(res.data.factors);
-      })
+    UserAPI.fetchMFA(enterEmail, access_token).then((res) => {
+      setMfaList(res.data.factors);
+    })
       .catch((err) => console.log(err));
   };
 
   const changePasswordHandller = () => {
-  UserAPI.changePassword(enterEmail, access_token).then((res) => {
-  setMessage({});
-  setMessage({ message: res.data.message, status: res.data.status });
-  })
-  .catch((err) => console.log(err));
+    UserAPI.changePassword(enterEmail, access_token).then((res) => {
+      setMessage({});
+      setMessage({ message: res.data.message, status: res.data.status });
+    })
+      .catch((err) => console.log(err));
   };
 
+  const verifyMFAHandller = (factorID) => {
+    setIsMFAVerifying(true);
+    setMfaVerified(false)
+    UserAPI.verifyMFA(enterEmail, factorID, access_token).then((res) => {
+      setMessage({});
+      setIsMFAVerifying(false);
+      if (res.data.status === 'success') setMfaVerified(true)
+      setMessage({ message: res.data.message, status: res.data.status });
+    })
+      .catch((err) => console.log(err));
+  }
+
   const resetMFAHandller = (factorID) => {
-  UserAPI.resetMFA(enterEmail, factorID, access_token).then((res) => {
-  setMessage({});
-  setMessage({ message: res.data.message, status: res.data.status });
-  const list = mfaList.filter((item) => item.factor_id !== factorID);
-  setMfaList(list);
-  })
-  .catch((err) => console.log(err));
+    UserAPI.resetMFA(enterEmail, factorID, access_token).then((res) => {
+      setMessage({});
+      setMessage({ message: res.data.message, status: res.data.status });
+      const list = mfaList.filter((item) => item.factor_id !== factorID);
+      setMfaList(list);
+    })
+      .catch((err) => console.log(err));
   };
-  
+
   const validateEmail = (e) => {
     setIsFetched(false);
     setShowDetails(false);
-        const email = e.target.value;
+    const email = e.target.value;
     setEnterEmail(email);
 
     if (validator.isEmail(email)) {
@@ -100,11 +126,11 @@ const Main = () => {
 
   const onAskQuestion = () => {
     setIsAnswering(true);
-      UserAPI.askQuestion(enterQuestion, enterEmail).then((res) => {
-        setAnswer("");
-        setAnswer(res.data.result);
-        setIsAnswering(false);
-      })
+    UserAPI.askQuestion(enterQuestion, enterEmail).then((res) => {
+      setAnswer("");
+      setAnswer(res.data.result);
+      setIsAnswering(false);
+    })
       .catch((err) => {
         setIsAnswering(false);
         console.log(err)
@@ -149,7 +175,7 @@ const Main = () => {
           <CustomButton
             disabled={!success}
             onClick={fetchDetailsHandller}
-            style={{height:'60px'}}
+            style={{ height: '60px' }}
           >
             Fetch Details
           </CustomButton>
@@ -194,7 +220,7 @@ const Main = () => {
             <CircularProgress />
           </Stack>
         )}
-                  <Grid item xs={12} md={4} sx={{ marginInline: "5%", marginTop: "3%" }}>
+        <Grid item xs={12} md={4} sx={{ marginInline: "5%", marginTop: "3%" }}>
           {showDetails && (
             <CustomButton
               disabled={loginDetails?.risk_percentage >= 80}
@@ -209,7 +235,7 @@ const Main = () => {
               style={{ transformOrigin: "0 0 0" }}
               timeout={mfaList?.length > 0 ? 500 : 0}
             >
-            <Typography variant="caption">
+              <Typography variant="caption">
                 <strong>
                   <h2>User MFA Factors</h2>
                 </strong>
@@ -263,8 +289,8 @@ const Main = () => {
                         spacing={2}
                         sx={{
                           display: "flex",
-                          minHeight: "100%",
-                          minWidth: "100%",
+                          minHeight: "25%",
+                          minWidth: "25%",
                           justifyContent: "flex-start",
                         }}
                       >
@@ -276,14 +302,42 @@ const Main = () => {
                         </Typography>
                       </Stack>
                     </Grid>
-                    <Grid item>
-                      <CustomButton
-                        disabled={loginDetails?.risk_percentage >= 80}
-                        sx={{ marginBlock: "10px", paddingInline: "20px" }}
-                        onClick={()=>resetMFAHandller(item.factor_id)}
-                      >
-                        Reset MFA
-                      </CustomButton>
+                    <Grid item sx={{
+                      display: "flex",
+                      flexDirection:"column",
+                          minHeight: "25%",
+                          minWidth: "25%",
+                          justifyContent: "flex-end",
+                        }}>
+                        {
+                          (item.factor_type === "push") && (<CustomButton
+                            disabled={loginDetails?.risk_percentage >= 80 || isMFAVerifying}
+                            style={ {...buttonSx}}//{mfaVerified ? {backgroundColor:"green"}: {backgroundColor:"#1976d2"}}
+                            sx={{ marginBlock: "10px", paddingInline: "20px", }}
+                            onClick={() => verifyMFAHandller(item.factor_id)}
+                            endIcon={isMFAVerifying ? <CircularProgress
+                              size={24}
+                              sx={{
+                                color: green[500],
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                marginTop: '-12px',
+                                marginLeft: '-12px',
+                              }}
+                            /> : null}
+                          >
+                            Verify MFA
+                          </CustomButton>)
+                        }                                                 
+                        <CustomButton
+                          disabled={loginDetails?.risk_percentage >= 80}
+                          style={{width: "100%"}}
+                          sx={{ marginBlock: "10px", paddingInline: "20px", }}
+                          onClick={() => resetMFAHandller(item.factor_id)}
+                        >
+                          Reset MFA
+                        </CustomButton>
                     </Grid>
                   </Grid>
                 </Paper>
